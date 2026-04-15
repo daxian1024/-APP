@@ -1,6 +1,11 @@
+import asyncio
+
+from sqlalchemy import select
+
 from app import create_app
-from app.extensions import db
+from app.extensions import Base, async_engine
 from app.models.entities import ServiceItem
+from app.services.async_db import get_session
 
 app = create_app()
 
@@ -12,12 +17,22 @@ services = [
 ]
 
 
-with app.app_context():
-    db.create_all()
-    if ServiceItem.query.count() == 0:
-        for item in services:
-            db.session.add(ServiceItem(**item))
-        db.session.commit()
-        print("已初始化服务项目数据")
-    else:
-        print("服务项目已存在，跳过初始化")
+async def main():
+    if async_engine is None:
+        raise RuntimeError("Async engine has not been initialized")
+
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    async with get_session() as session:
+        result = await session.execute(select(ServiceItem.id))
+        has_service = result.first() is not None
+        if not has_service:
+            session.add_all(ServiceItem(**item) for item in services)
+            print("已初始化服务项目数据")
+        else:
+            print("服务项目已存在，跳过初始化")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

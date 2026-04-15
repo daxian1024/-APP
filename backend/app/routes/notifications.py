@@ -1,6 +1,9 @@
 from flask import Blueprint
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, jwt_required
+from sqlalchemy import select
+
 from app.models.entities import Notification
+from app.services.async_db import get_session
 from app.services.authz import permission_required
 from app.services.response import ok
 
@@ -11,21 +14,30 @@ notification_bp = Blueprint("notifications", __name__, url_prefix="/api/notifica
 @notification_bp.get("")
 @jwt_required()
 @permission_required("notification:view:self")
-def my_notifications():
+async def list_notifications():
     user_id = int(get_jwt_identity())
-    rows = Notification.query.filter_by(user_id=user_id).order_by(Notification.id.desc()).limit(50).all()
+
+    async with get_session() as session:
+        result = await session.execute(
+            select(Notification)
+            .where(Notification.user_id == user_id)
+            .order_by(Notification.id.desc())
+            .limit(50)
+        )
+        rows = result.scalars().all()
+
     return ok(
         {
             "items": [
                 {
-                    "id": r.id,
-                    "channel": r.channel,
-                    "title": r.title,
-                    "content": r.content,
-                    "sent": r.sent,
-                    "created_at": r.created_at.isoformat(),
+                    "id": item.id,
+                    "title": item.title,
+                    "content": item.content,
+                    "channel": item.channel,
+                    "sent": item.sent,
+                    "created_at": item.created_at.isoformat(),
                 }
-                for r in rows
+                for item in rows
             ]
         }
     )

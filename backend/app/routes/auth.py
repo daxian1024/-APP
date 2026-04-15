@@ -1,3 +1,4 @@
+from sqlalchemy import or_, select
 from flask import Blueprint, request
 from flask_jwt_extended import (
     create_access_token,
@@ -5,8 +6,8 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
-from app.extensions import db
 from app.models.entities import User
+from app.services.async_db import get_session
 from app.services.authz import permission_required, ROLE_PERMISSIONS
 from app.services.response import ok, fail
 from app.services.security import rate_limit, verify_signature
@@ -17,7 +18,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 @auth_bp.post("/register")
 @rate_limit("auth_register")
-def register():
+async def register():
     data = request.get_json() or {}
     username = data.get("username", "").strip()
     phone = data.get("phone", "").strip()
@@ -30,25 +31,34 @@ def register():
     if not username or not phone or len(password) < 6:
         return fail(4001, "参数不合法")
 
-    if User.query.filter((User.username == username) | (User.phone == phone)).first():
-        return fail(4008, "用户名或手机号已存在")
+    async with get_session() as session:
+        stmt = select(User).where(or_(User.username == username, User.phone == phone))
+        result = await session.execute(stmt)
+        exists = result.scalar_one_or_none()
+        if exists:
+            return fail(4008, "用户名或手机号已存在")
 
-    user = User(username=username, phone=phone, role=role)
-    user.set_password(password)
-    db.session.add(user)
-    db.session.commit()
+        user = User(username=username, phone=phone, role=role)
+        user.set_password(password)
+        session.add(user)
+        await session.flush()
+        user_id = user.id
 
-    return ok({"id": user.id}, "注册成功")
+    return ok({"id": user_id}, "注册成功")
 
 
 @auth_bp.post("/login")
 @rate_limit("auth_login")
-def login():
+async def login():
     data = request.get_json() or {}
     account = data.get("account", "").strip()
     password = data.get("password", "")
 
-    user = User.query.filter((User.username == account) | (User.phone == account)).first()
+    async with get_session() as session:
+        stmt = select(User).where(or_(User.username == account, User.phone == account))
+        result = await session.execute(stmt)
+        user = result.scalar_one_or_none()
+
     if not user or not user.check_password(password):
         return fail(4011, "账号或密码错误", 401)
 
@@ -79,64 +89,57 @@ def refresh_access_token():
 
 @auth_bp.get("/me")
 @jwt_required()
-def me():
+async def me():
     user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
+    async with get_session() as session:
+        result = await session.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+
     if not user:
         return fail(4043, "用户不存在", 404)
-    return ok(
-        {
-            "id": user.id,
-            "username": user.username,
-            "phone": user.phone,
-            "role": user.role,
-        }
-    )
+    return ok({"id": user.id, "username": user.username, "phone": user.phone, "role": user.role})
 
 
 @auth_bp.patch("/me")
 @jwt_required()
-def update_me():
+async def update_me():
     user_id = int(get_jwt_identity())
-    user = User.query.get(user_id)
-    if not user:
-        return fail(4043, "用户不存在", 404)
 
     data = request.get_json() or {}
     username = (data.get("username") or "").strip()
 
-    if username:
-        exists = User.query.filter(User.username == username, User.id != user.id).first()
-        if exists:
-            return fail(4008, "用户名已存在")
-        user.username = username
+    async with get_session() as session:
+        result = await session.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        if not user:
+            return fail(4043, "用户不存在", 404)
 
-    db.session.commit()
-    return ok(
-        {
-            "id": user.id,
-            "username": user.username,
-            "phone": user.phone,
-            "role": user.role,
-        },
-        "资料更新成功",
-    )
+        if username:
+            exists_result = await session.execute(select(User).where(User.username == username, User.id != user.id))
+            exists = exists_result.scalar_one_or_none()
+            if exists:
+                return fail(4008, "用户名已存在")
+            user.username = username
+
+    return ok({"id": user.id, "username": user.username, "phone": user.phone, "role": user.role}, "资料更新成功")
 
 
 @auth_bp.patch("/users/<int:user_id>/role")
 @jwt_required()
 @permission_required("admin:user:role:update")
 @verify_signature()
-def update_user_role(user_id: int):
+async def update_user_role(user_id: int):
     data = request.get_json() or {}
     role = data.get("role", "").strip()
     if role not in ["elderly", "nurse", "admin"]:
         return fail(4007, "角色不合法")
 
-    user = User.query.get(user_id)
-    if not user:
-        return fail(4043, "用户不存在", 404)
+    async with get_session() as session:
+        result = await session.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        if not user:
+            return fail(4043, "用户不存在", 404)
 
-    user.role = role
-    db.session.commit()
+        user.role = role
+
     return ok({"id": user.id, "role": user.role}, "角色更新成功")

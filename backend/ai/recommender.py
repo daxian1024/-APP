@@ -1,26 +1,49 @@
-from collections import Counter
-from app import create_app
+from sqlalchemy import select
+
 from app.models.entities import Order, ServiceItem
+from app.services.async_db import get_session
 
 
-app = create_app()
+async def recommend_services(user_id: int, top_k: int = 5):
+    async with get_session() as session:
+        order_result = await session.execute(
+            select(Order).where(Order.user_id == user_id)
+        )
+        orders = order_result.scalars().all()
 
+        service_ids = [order.service_item_id for order in orders]
+        if service_ids:
+            service_result = await session.execute(
+                select(ServiceItem).where(ServiceItem.id.in_(service_ids))
+            )
+            services = service_result.scalars().all()
+        else:
+            service_result = await session.execute(
+                select(ServiceItem).order_by(ServiceItem.id.desc()).limit(top_k)
+            )
+            services = service_result.scalars().all()
 
-def recommend_services_for_user(user_id: int, top_k: int = 3):
-    with app.app_context():
-        orders = Order.query.filter_by(user_id=user_id).all()
-        if not orders:
-            return cold_start_recommend(top_k)
-
-        freq = Counter([o.service_item_id for o in orders])
-        service_ids = [sid for sid, _ in freq.most_common(top_k)]
-        services = ServiceItem.query.filter(ServiceItem.id.in_(service_ids)).all()
+    if service_ids and services:
         return [
-            {"id": s.id, "name": s.name, "price": s.price, "reason": "基于历史下单偏好"}
-            for s in services
+            {
+                "id": service.id,
+                "name": service.name,
+                "description": service.description,
+                "price": service.price,
+                "duration_minutes": service.duration_minutes,
+                "is_active": service.is_active,
+            }
+            for service in services[:top_k]
         ]
 
-
-def cold_start_recommend(top_k: int = 3):
-    services = ServiceItem.query.order_by(ServiceItem.id.desc()).limit(top_k).all()
-    return [{"id": s.id, "name": s.name, "price": s.price, "reason": "热门服务"} for s in services]
+    return [
+        {
+            "id": service.id,
+            "name": service.name,
+            "description": service.description,
+            "price": service.price,
+            "duration_minutes": service.duration_minutes,
+            "is_active": service.is_active,
+        }
+        for service in services
+    ]
