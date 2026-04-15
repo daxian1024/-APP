@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>智慧护理平台</title>
+    <style>
+      :root {
+        --bg: #0f1724;
+        --bg2: #111c2d;
+        --panel: #162235;
+        --panel2: #1a2940;
+        --line: #27384f;
+        --text: #e8eef8;
+        --muted: #94a3b8;
+        --primary: #2dd4bf;
+        --warn: #f59e0b;
+        --ok: #22c55e;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: "Microsoft YaHei", Arial, sans-serif; background: var(--bg2); color: var(--text); }
+
+      .app { min-height: 100vh; }
+      .topbar {
+        height: 60px;
+        background: linear-gradient(90deg, #0f1724, #121e30);
+        border-bottom: 1px solid var(--line);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 14px; position: sticky; top: 0; z-index: 30;
+      }
+      .top-left, .top-right { display: flex; align-items: center; gap: 10px; }
+      .brand { font-size: 24px; cursor: pointer; }
+      .title { font-size: 22px; font-weight: 700; }
+      .search { width: 360px; max-width: 42vw; background: #111a2a; border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; }
+
+      .profile { position: relative; }
+      .avatar { width: 34px; height: 34px; border-radius: 50%; background: #22334c; display: grid; place-items: center; cursor: pointer; border: 1px solid #375070; }
+      .menu {
+        display: none; position: absolute; right: 0; top: 44px; width: 220px;
+        background: #122033; border: 1px solid var(--line); border-radius: 10px; padding: 10px;
+        box-shadow: 0 10px 24px rgba(0,0,0,.35);
+      }
+      .menu.show { display: block; }
+      .menu-item { padding: 8px 10px; border-radius: 8px; cursor: pointer; color: var(--text); }
+      .menu-item:hover { background: #1b2d45; }
+      .menu hr { border: none; border-top: 1px solid var(--line); margin: 8px 0; }
+
+      .layout { display: flex; min-height: calc(100vh - 60px); }
+      .sidebar {
+        width: 250px; background: #101927; border-right: 1px solid var(--line);
+        transition: transform .2s ease; overflow: auto;
+      }
+      .sidebar.collapsed { transform: translateX(-100%); position: absolute; z-index: 40; height: calc(100vh - 60px); }
+      .nav-group { padding: 12px; }
+      .nav-title { color: var(--muted); font-size: 12px; margin: 6px 10px; }
+      .nav-btn {
+        width: 100%; text-align: left; background: transparent; color: var(--text);
+        border: 1px solid transparent; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; cursor: pointer;
+      }
+      .nav-btn:hover, .nav-btn.active { background: #1f2e45; border-color: #2f4663; }
+
+      .content { flex: 1; padding: 16px; }
+      .panel { display: none; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+      .panel.active { display: block; }
+      h3 { margin: 0 0 10px; }
+
+      input, textarea, button, select {
+        width: 100%; border-radius: 8px; border: 1px solid var(--line); background: #0f1b2d; color: var(--text);
+        padding: 10px; margin: 5px 0;
+      }
+      button { background: #20344e; cursor: pointer; }
+      button.primary { background: #0f766e; border-color: #14b8a6; }
+      button.secondary { background: #20344e; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+      .btns { display: flex; gap: 8px; }
+
+      ul { list-style: none; padding: 0; margin: 0; }
+      .item { border: 1px solid #2a3b53; border-radius: 10px; padding: 10px; background: var(--panel2); margin-bottom: 8px; }
+      .muted { color: var(--muted); font-size: 12px; }
+      .tag { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 12px; color: #fff; }
+      .pending { background: var(--warn); } .accepted,.in_service { background: #3b82f6; } .completed { background: var(--ok); }
+
+      #toast {
+        position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+        background: rgba(6, 11, 20, .92); color: #fff; padding: 10px 14px; border-radius: 8px; display: none; z-index: 999;
+      }
+      @media (max-width: 900px) { .search { display: none; } .sidebar { position: absolute; z-index: 40; height: calc(100vh - 60px); } }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="top-left">
+          <span class="brand" onclick="toggleSidebar()">☰</span>
+          <span class="title">智慧护理平台</span>
+          <input class="search" placeholder="搜索服务、订单号" />
+        </div>
+        <div class="top-right">
+          <span id="loginInfo" class="muted">未登录</span>
+          <div class="profile">
+            <div class="avatar" onclick="toggleUserMenu()">我</div>
+            <div id="userMenu" class="menu">
+              <div class="menu-item" onclick="showPanel('profilePanel')">个人资料</div>
+              <div class="menu-item" onclick="showPanel('authPanel')">登录/注册</div>
+              <hr />
+              <div class="menu-item" onclick="logout()">退出登录</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside id="sidebar" class="sidebar">
+          <div class="nav-group">
+            <div class="nav-title">功能菜单</div>
+            <button class="nav-btn active" data-panel="authPanel" onclick="showPanel('authPanel', this)">登录与注册</button>
+            <button class="nav-btn" data-panel="servicesPanel" onclick="showPanel('servicesPanel', this)">服务项目</button>
+            <button class="nav-btn" data-panel="addressPanel" onclick="showPanel('addressPanel', this)">地址管理</button>
+            <button class="nav-btn" data-panel="orderPanel" onclick="showPanel('orderPanel', this)">下单与支付</button>
+            <button class="nav-btn" data-panel="myOrderPanel" onclick="showPanel('myOrderPanel', this)">我的订单</button>
+            <button class="nav-btn" data-panel="timelinePanel" onclick="showPanel('timelinePanel', this)">订单时间线</button>
+            <button class="nav-btn" data-panel="feedbackPanel" onclick="showPanel('feedbackPanel', this)">评价与投诉</button>
+            <button class="nav-btn" data-panel="profilePanel" onclick="showPanel('profilePanel', this)">个人资料</button>
+          </div>
+        </aside>
+
+        <main class="content">
+          <section id="authPanel" class="panel active">
+            <h3>登录与注册</h3>
+            <div class="row"><input id="account" placeholder="用户名或手机号" /><input id="password" type="password" placeholder="密码" /></div>
+            <div class="btns"><button class="primary" onclick="login()">登录</button><button class="secondary" onclick="fillDemoUser()">填充测试账号</button></div>
+            <hr style="border-color:#2a3b53" />
+            <div class="row"><input id="reg_username" placeholder="用户名" /><input id="reg_phone" placeholder="手机号" /></div>
+            <input id="reg_password" type="password" placeholder="密码（至少6位）" />
+            <button class="primary" onclick="registerUser()">注册并登录</button>
+          </section>
+
+          <section id="servicesPanel" class="panel">
+            <h3>服务项目</h3>
+            <div class="btns"><button onclick="loadServices()">全部服务</button><button onclick="loadPopularServices()">热门服务</button></div>
+            <ul id="serviceList" style="margin-top:8px"></ul>
+          </section>
+
+          <section id="addressPanel" class="panel">
+            <h3>地址管理</h3>
+            <div class="row"><input id="contact_name" placeholder="联系人" /><input id="contact_phone" placeholder="联系电话" /></div>
+            <div class="row3"><input id="province" placeholder="省" /><input id="city" placeholder="市" /><input id="district" placeholder="区" /></div>
+            <input id="detail" placeholder="详细地址" />
+            <div class="btns"><button class="primary" onclick="addAddress()">新增地址</button><button onclick="loadAddresses()">刷新地址列表</button></div>
+            <div class="row"><input id="editAddressId" placeholder="编辑地址ID" /><button onclick="updateAddress()">编辑地址</button></div>
+            <div class="row"><input id="deleteAddressId" placeholder="删除地址ID" /><button onclick="deleteAddress()">删除地址</button></div>
+            <ul id="addressList" style="margin-top:8px"></ul>
+          </section>
+
+          <section id="orderPanel" class="panel">
+            <h3>下单与支付</h3>
+            <div class="row"><input id="service_item_id" placeholder="服务项目ID" /><input id="address_id" placeholder="地址ID" /></div>
+            <input id="appointment_time" placeholder="预约时间，如 2026-04-15 10:00" />
+            <textarea id="note" placeholder="备注（选填）"></textarea>
+            <button class="primary" onclick="createOrder()">提交预约</button>
+            <div class="row"><input id="payOrderId" placeholder="待支付订单ID" /><button onclick="payOrder()">模拟支付</button></div>
+          </section>
+
+          <section id="myOrderPanel" class="panel">
+            <h3>我的订单</h3>
+            <button onclick="loadOrders()">刷新订单列表</button>
+            <ul id="orderList" style="margin-top:8px"></ul>
+          </section>
+
+          <section id="timelinePanel" class="panel">
+            <h3>订单状态时间线</h3>
+            <div class="row"><input id="timelineOrderId" placeholder="订单ID" /><button onclick="loadTimeline()">查询时间线</button></div>
+            <ul id="timelineList" style="margin-top:8px"></ul>
+          </section>
+
+          <section id="feedbackPanel" class="panel">
+            <h3>评价与投诉</h3>
+            <div class="row3"><input id="reviewOrderId" placeholder="评价订单ID" /><select id="reviewRating"><option value="5">5星</option><option value="4">4星</option><option value="3">3星</option><option value="2">2星</option><option value="1">1星</option></select><button onclick="createReview()">提交评价</button></div>
+            <textarea id="reviewComment" placeholder="评价内容"></textarea>
+            <div class="row"><input id="complaintOrderId" placeholder="投诉订单ID（可选）" /><button onclick="createComplaint()">提交投诉</button></div>
+            <textarea id="complaintContent" placeholder="投诉内容"></textarea>
+            <div class="btns"><button onclick="loadMyReviews()">我的评价</button><button onclick="loadMyComplaints()">我的投诉</button></div>
+            <ul id="feedbackList" style="margin-top:8px"></ul>
+          </section>
+
+          <section id="profilePanel" class="panel">
+            <h3>个人资料</h3>
+            <div class="item">
+              <div>当前状态：<span id="profileStatus" class="muted">未登录</span></div>
+              <div class="muted" style="margin-top:6px">建议：登录后在右上角菜单进入个人资料。</div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+    <script src="./js/app.js"></script>
+  </body>
+</html>

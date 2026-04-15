@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760">
+  <rect width="1200" height="760" fill="#f8fbff"/>
+  <text x="600" y="40" text-anchor="middle" font-size="28" font-family="Microsoft YaHei" fill="#1f3b6d">■3-1 √▀Я¤╙Д■ТTQ+zgд√идsЁ	</text>
+
+  <rect x="460" y="80" width="280" height="60" rx="12" fill="#3f6fd9"/>
+  <text x="600" y="118" text-anchor="middle" font-size="22" font-family="Microsoft YaHei" fill="#fff">zgдsЁ</text>
+
+  <g font-family="Microsoft YaHei" font-size="18" fill="#1f3b6d">
+    <rect x="80" y="200" width="220" height="70" rx="10" fill="#dfeaff" stroke="#6e90d9"/>
+    <text x="190" y="242" text-anchor="middle">(7д┴-├</text>
+
+    <rect x="340" y="200" width="220" height="70" rx="10" fill="#dfeaff" stroke="#6e90d9"/>
+    <text x="450" y="242" text-anchor="middle">бyю-├</text>
+
+    <rect x="600" y="200" width="220" height="70" rx="10" fill="#dfeaff" stroke="#6e90d9"/>
+    <text x="710" y="242" text-anchor="middle">вU/╪-├</text>
+
+    <rect x="860" y="200" width="220" height="70" rx="10" fill="#dfeaff" stroke="#6e90d9"/>
+    <text x="970" y="242" text-anchor="middle">═ИХ╔-├</text>
+
+    <rect x="150" y="340" width="260" height="70" rx="10" fill="#e8f6ec" stroke="#66a57a"/>
+    <text x="280" y="382" text-anchor="middle">бяды/бX	</text>
+
+    <rect x="470" y="340" width="260" height="70" rx="10" fill="#e8f6ec" stroke="#66a57a"/>
+    <text x="600" y="382" text-anchor="middle">ЙhббRBAC/~/PA	</text>
+
+    <rect x="790" y="340" width="260" height="70" rx="10" fill="#e8f6ec" stroke="#66a57a"/>
+    <text x="920" y="382" text-anchor="middle">х-├┘Е/эс/ос	</text>
+
+    <rect x="160" y="500" width="280" height="80" rx="10" fill="#fff3df" stroke="#d2a45d"/>
+    <text x="300" y="530" text-anchor="middle">pnРB</text>
+    <text x="300" y="560" text-anchor="middle" font-size="15">pandas / numpy / PySpark</text>
+
+    <rect x="470" y="500" width="280" height="80" rx="10" fill="#fff3df" stroke="#d2a45d"/>
+    <text x="610" y="530" text-anchor="middle">ЮЎбЧB</text>
+    <text x="610" y="560" text-anchor="middle" font-size="15">Kafka / Flink / Jf</text>
+
+    <rect x="780" y="500" width="280" height="80" rx="10" fill="#fff3df" stroke="#d2a45d"/>
+    <text x="920" y="530" text-anchor="middle">AIбB</text>
+    <text x="920" y="560" text-anchor="middle" font-size="15">иP / ╬iДf / z¤╩</text>
+  </g>
+
+  <g stroke="#5d7cc7" stroke-width="2" fill="none">
+    <line x1="600" y1="140" x2="190" y2="200"/>
+    <line x1="600" y1="140" x2="450" y2="200"/>
+    <line x1="600" y1="140" x2="710" y2="200"/>
+    <line x1="600" y1="140" x2="970" y2="200"/>
+    <line x1="190" y1="270" x2="280" y2="340"/>
+    <line x1="450" y1="270" x2="600" y2="340"/>
+    <line x1="710" y1="270" x2="600" y2="340"/>
+    <line x1="970" y1="270" x2="920" y2="340"/>
+    <line x1="280" y1="410" x2="300" y2="500"/>
+    <line x1="600" y1="410" x2="610" y2="500"/>
+    <line x1="920" y1="410" x2="920" y2="500"/>
+  </g>
+</svg>

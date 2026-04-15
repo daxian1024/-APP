@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820">
+  <rect width="1280" height="820" fill="#f7faff"/>
+  <text x="640" y="42" text-anchor="middle" font-size="30" font-family="Microsoft YaHei" fill="#1d3f70">?2-3 ????</text>
+
+  <rect x="60" y="90" width="1160" height="680" rx="12" fill="#ffffff" stroke="#5b80cc" stroke-width="2"/>
+
+  <rect x="110" y="140" width="300" height="120" rx="10" fill="#e8f0ff" stroke="#6f90d8"/>
+  <text x="260" y="190" text-anchor="middle" font-size="20" font-family="Microsoft YaHei" fill="#1f3b6d">???/H5??</text>
+  <text x="260" y="220" text-anchor="middle" font-size="14" font-family="Microsoft YaHei" fill="#385b95">index.html / admin.html</text>
+
+  <rect x="490" y="140" width="300" height="120" rx="10" fill="#e8f0ff" stroke="#6f90d8"/>
+  <text x="640" y="190" text-anchor="middle" font-size="20" font-family="Microsoft YaHei" fill="#1f3b6d">Nginx ??</text>
+  <text x="640" y="220" text-anchor="middle" font-size="14" font-family="Microsoft YaHei" fill="#385b95">???? / ????</text>
+
+  <rect x="870" y="140" width="300" height="120" rx="10" fill="#e8f0ff" stroke="#6f90d8"/>
+  <text x="1020" y="190" text-anchor="middle" font-size="20" font-family="Microsoft YaHei" fill="#1f3b6d">Flask API ??</text>
+  <text x="1020" y="220" text-anchor="middle" font-size="14" font-family="Microsoft YaHei" fill="#385b95">Auth/Order/Admin/Analytics</text>
+
+  <rect x="160" y="350" width="260" height="120" rx="10" fill="#edf9ef" stroke="#6ca77f"/>
+  <text x="290" y="402" text-anchor="middle" font-size="20" font-family="Microsoft YaHei" fill="#235d36">MySQL</text>
+  <text x="290" y="430" text-anchor="middle" font-size="14" font-family="Microsoft YaHei" fill="#3f7d54">??? / ????</text>
+
+  <rect x="500" y="350" width="260" height="120" rx="10" fill="#edf9ef" stroke="#6ca77f"/>
+  <text x="630" y="402" text-anchor="middle" font-size="20" font-family="Microsoft YaHei" fill="#235d36">Redis</text>
+  <text x="630" y="430" text-anchor="middle" font-size="14" font-family="Microsoft YaHei" fill="#3f7d54">?? / ?? / ????</text>
+
+  <rect x="840" y="350" width="300" height="120" rx="10" fill="#fff4e6" stroke="#cd9a56"/>
+  <text x="990" y="398" text-anchor="middle" font-size="20" font-family="Microsoft YaHei" fill="#7e4f1f">Kafka + Flink</text>
+  <text x="990" y="430" text-anchor="middle" font-size="14" font-family="Microsoft YaHei" fill="#9b6430">????????</text>
+
+  <rect x="260" y="560" width="320" height="130" rx="10" fill="#f1ebff" stroke="#8e78cc"/>
+  <text x="420" y="612" text-anchor="middle" font-size="20" font-family="Microsoft YaHei" fill="#4b3c7f">Hive / HDFS</text>
+  <text x="420" y="640" text-anchor="middle" font-size="14" font-family="Microsoft YaHei" fill="#6c5aa8">???? ODS-DWD-DWS</text>
+
+  <rect x="700" y="560" width="320" height="130" rx="10" fill="#f1ebff" stroke="#8e78cc"/>
+  <text x="860" y="612" text-anchor="middle" font-size="20" font-family="Microsoft YaHei" fill="#4b3c7f">ClickHouse / BI</text>
+  <text x="860" y="640" text-anchor="middle" font-size="14" font-family="Microsoft YaHei" fill="#6c5aa8">????????</text>
+
+  <g stroke="#5a7fc8" stroke-width="3" fill="none">
+    <line x1="410" y1="200" x2="490" y2="200"/>
+    <line x1="790" y1="200" x2="870" y2="200"/>
+    <line x1="1020" y1="260" x2="1020" y2="350"/>
+    <line x1="920" y1="260" x2="630" y2="350"/>
+    <line x1="880" y1="260" x2="290" y2="350"/>
+    <line x1="990" y1="470" x2="860" y2="560"/>
+    <line x1="900" y1="470" x2="580" y2="560"/>
+  </g>
+</svg>
