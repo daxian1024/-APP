@@ -1,73 +1,138 @@
 import axios from 'axios'
-import { useAuthStore } from '../stores/auth'
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:5000/api'
 
 const api = axios.create({
-  baseURL: API_BASE,
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000/api',
   timeout: 15000,
 })
 
 api.interceptors.request.use((config) => {
-  const auth = useAuthStore()
-  if (auth.accessToken) {
-    config.headers = config.headers || {}
-    config.headers.Authorization = `Bearer ${auth.accessToken}`
+  const token = localStorage.getItem('access_token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
 
-let refreshing = false
-let queue = []
-
-function resolveQueue(token) {
-  queue.forEach((cb) => cb(token))
-  queue = []
-}
-
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const auth = useAuthStore()
-    const original = error.config || {}
-    const status = error?.response?.status
-
-    if (status === 401 && !original._retry && auth.refreshToken) {
-      original._retry = true
-
-      if (refreshing) {
-        return new Promise((resolve) => {
-          queue.push((newToken) => {
-            original.headers = original.headers || {}
-            original.headers.Authorization = `Bearer ${newToken}`
-            resolve(api(original))
-          })
-        })
-      }
-
-      refreshing = true
-      try {
-        const refreshResp = await axios.post(`${API_BASE}/auth/refresh`, {}, {
-          headers: { Authorization: `Bearer ${auth.refreshToken}` },
-        })
-        const newToken = refreshResp.data?.data?.access_token
-        if (!newToken) throw new Error('refresh failed')
-
-        auth.setAccessToken(newToken)
-        resolveQueue(newToken)
-        original.headers = original.headers || {}
-        original.headers.Authorization = `Bearer ${newToken}`
-        return api(original)
-      } catch (_e) {
-        auth.logout()
-        return Promise.reject(error)
-      } finally {
-        refreshing = false
-      }
-    }
-
-    return Promise.reject(error)
+  (response) => response.data,
+  (error) => {
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      '请求失败，请稍后重试'
+    return Promise.reject(new Error(message))
   },
 )
+
+export const authApi = {
+  register(data) {
+    return api.post('/auth/register', data)
+  },
+  login(data) {
+    return api.post('/auth/login', data)
+  },
+  refresh() {
+    return api.post('/auth/refresh')
+  },
+  me() {
+    return api.get('/auth/me')
+  },
+  updateMe(data) {
+    return api.patch('/auth/me', data)
+  },
+}
+
+export const serviceApi = {
+  list() {
+    return api.get('/services')
+  },
+  popular() {
+    return api.get('/services/popular')
+  },
+}
+
+export const addressApi = {
+  list() {
+    return api.get('/addresses')
+  },
+  create(data) {
+    return api.post('/addresses', data)
+  },
+  update(id, data) {
+    return api.patch(`/addresses/${id}`, data)
+  },
+  remove(id) {
+    return api.delete(`/addresses/${id}`)
+  },
+}
+
+export const orderApi = {
+  list() {
+    return api.get('/orders')
+  },
+  create(data) {
+    return api.post('/orders', data)
+  },
+  timeline(id) {
+    return api.get(`/orders/${id}/timeline`)
+  },
+  pay(id, data) {
+    return api.post(`/orders/${id}/pay`, data)
+  },
+}
+
+export const feedbackApi = {
+  createReview(data) {
+    return api.post('/feedback/reviews', data)
+  },
+  listReviews() {
+    return api.get('/feedback/reviews')
+  },
+  createComplaint(data) {
+    return api.post('/feedback/complaints', data)
+  },
+  listComplaints() {
+    return api.get('/feedback/complaints')
+  },
+}
+
+export const adminApi = {
+  listOrders() {
+    return api.get('/admin/orders')
+  },
+  assignNurse(orderId, data) {
+    return api.patch(`/admin/orders/${orderId}/assign`, data)
+  },
+  updateOrderStatus(orderId, data) {
+    return api.patch(`/admin/orders/${orderId}/status`, data)
+  },
+  sendNotification(data) {
+    return api.post('/admin/notifications/send', data)
+  },
+}
+
+export const analyticsApi = {
+  getOverview() {
+    return api.get('/analytics/overview')
+  },
+  getSummary() {
+    return api.get('/analytics/summary')
+  },
+  getOrdersTrend(days = 7) {
+    return api.get('/analytics/orders-trend', { params: { days } })
+  },
+  getServiceDistribution() {
+    return api.get('/analytics/service-distribution')
+  },
+  getOrderStatusDistribution() {
+    return api.get('/analytics/order-status-distribution')
+  },
+  getNurseRanking() {
+    return api.get('/analytics/nurse-ranking')
+  },
+  getComplaintTrend(days = 7) {
+    return api.get('/analytics/complaint-trend', { params: { days } })
+  },
+}
 
 export default api

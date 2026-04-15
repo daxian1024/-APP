@@ -40,6 +40,13 @@ cd frontend-vue
 npm install
 ```
 
+如果你需要运行数据看板页面，请确保图表和路由依赖已安装：
+
+```bash
+cd frontend-vue
+npm install vue-router echarts
+```
+
 ## 数据库初始化
 
 在后端依赖安装完成后，执行数据库初始化脚本：

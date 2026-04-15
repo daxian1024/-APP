@@ -10,6 +10,7 @@
         <RouterLink to="/feedback" class="menu-item">评价与投诉</RouterLink>
         <RouterLink to="/profile" class="menu-item">个人资料</RouterLink>
         <RouterLink to="/space" class="menu-item">个人空间</RouterLink>
+        <RouterLink to="/analytics" class="menu-item">数据看板</RouterLink>
       </aside>
     </div>
 
@@ -31,6 +32,7 @@
               <li class="menu-title">{{ auth.displayName }}</li>
               <li><RouterLink to="/profile">个人资料</RouterLink></li>
               <li><RouterLink to="/space">个人空间</RouterLink></li>
+              <li><RouterLink to="/analytics">数据看板</RouterLink></li>
               <li><a @click="logout">退出登录</a></li>
             </ul>
           </div>
